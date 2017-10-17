@@ -33,15 +33,20 @@ impl<'a, 'r> FromRequest<'a, 'r> for Admin {
       .and_then(|value| value.parse::<auth::Auth>().ok())
       .and_then(|auth| {
         match auth {
-          auth::Auth::Basic(auth::Basic { ref user, ref pass }) if user == "nick" && pass == "dujay" => Some(Admin{ id: 1 }),
-          auth::Auth::Bearer(auth::Bearer { ref token }) if token == "123456" => Some(Admin{ id: 2 }),
-          _ => None
+          auth::Auth::Basic(auth::Basic { ref user, ref pass }) if user == "nick" &&
+                                                                   pass == "dujay" => {
+            Some(Admin { id: 1 })
+          }
+          auth::Auth::Bearer(auth::Bearer { ref token }) if token == "123456" => {
+            Some(Admin { id: 2 })
+          }
+          _ => None,
         }
       });
 
     let apikey_option = header_map.get_one("X-Api-Key")
       .and_then(|key| if key == "123456" {
-        Some(Admin{ id: 3 })
+        Some(Admin { id: 3 })
       } else {
         None
       });

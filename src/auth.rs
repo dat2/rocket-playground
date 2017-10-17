@@ -17,11 +17,10 @@ error_chain! {
 #[derive(Debug)]
 pub enum Auth {
   Basic(Basic),
-  Bearer(Bearer)
+  Bearer(Bearer),
 }
 
 impl FromStr for Auth {
-
   type Err = Error;
 
   fn from_str(s: &str) -> Result<Self> {
@@ -84,8 +83,6 @@ impl FromStr for Bearer {
 
     let token = &s["Bearer ".len()..];
 
-    Ok(Bearer {
-      token: token.to_owned()
-    })
+    Ok(Bearer { token: token.to_owned() })
   }
 }
