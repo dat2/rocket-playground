@@ -21,21 +21,21 @@ mod auth;
 
 #[derive(Debug)]
 struct Admin {
-  id: usize
+  id: usize,
 }
 
-impl<'a,'r> FromRequest<'a,'r> for Admin {
+impl<'a, 'r> FromRequest<'a, 'r> for Admin {
   type Error = String;
 
   fn from_request(request: &'a Request) -> Outcome<Self, Self::Error> {
     let header_map = request.headers();
     header_map.get_one("Authorization")
-      .and_then(|value| value.parse::<auth::BasicAuth>().ok())
+      .and_then(|value| value.parse::<auth::Auth>().ok())
       .and_then(|auth| {
-        if &auth.user == "nick" && &auth.pass == "dujay" {
-          Some(Admin { id: 1 })
-        } else {
-          None
+        match auth {
+          auth::Auth::Basic(auth::Basic { ref user, ref pass }) if user == "nick" && pass == "dujay" => Some(Admin{ id: 1 }),
+          auth::Auth::Bearer(auth::Bearer { ref token }) if token == "123456" => Some(Admin{ id: 2 }),
+          _ => None
         }
       })
       .into_outcome((Status::Unauthorized, "".to_owned()))
@@ -45,7 +45,7 @@ impl<'a,'r> FromRequest<'a,'r> for Admin {
 #[derive(Serialize, Deserialize, Debug)]
 struct User {
   id: usize,
-  name: String
+  name: String,
 }
 
 #[post("/users", format = "application/json", data = "<user>")]
