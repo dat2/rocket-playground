@@ -29,7 +29,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for Admin {
 
   fn from_request(request: &'a Request) -> Outcome<Self, Self::Error> {
     let header_map = request.headers();
-    header_map.get_one("Authorization")
+    let authorization_option = header_map.get_one("Authorization")
       .and_then(|value| value.parse::<auth::Auth>().ok())
       .and_then(|auth| {
         match auth {
@@ -37,7 +37,16 @@ impl<'a, 'r> FromRequest<'a, 'r> for Admin {
           auth::Auth::Bearer(auth::Bearer { ref token }) if token == "123456" => Some(Admin{ id: 2 }),
           _ => None
         }
-      })
+      });
+
+    let apikey_option = header_map.get_one("X-Api-Key")
+      .and_then(|key| if key == "123456" {
+        Some(Admin{ id: 3 })
+      } else {
+        None
+      });
+
+    authorization_option.or(apikey_option)
       .into_outcome((Status::Unauthorized, "".to_owned()))
   }
 }
